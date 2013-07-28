@@ -13,13 +13,13 @@ class ScravatarTest extends FunSuite {
   }
 
   test("All props are combined") {
-    val gravatar = Gravatar(email).ssl(true).default(Monster).maxRatedAs(R).forceDefault(true).size(100).avatarUrl
+    val gravatar = Gravatar(email).ssl(true).default(Monster).maxRatedAs(R).forceDefault(true).size(100).url
     assert(gravatar.contains("=monster"))
   }
 
   test("Download") {
     val fos = new FileOutputStream("//tmp/pic.jpg")
-    fos.write(Gravatar(email).downloadImage)
+    fos.write(Gravatar(email).image)
   }
 
   test("Fails if size > 2048") {
@@ -52,5 +52,11 @@ class ScravatarTest extends FunSuite {
     }
   }
 
-
+  test("Get gravatar profile") {
+    val gravatar = Gravatar("beau@dentedreality.com.au")
+    val profile = scala.concurrent.Await.result(gravatar.profile, scala.concurrent.duration.Duration.Inf)
+    assert(profile.hash === "205e460b479e2e5b48aec07710c08d50")
+    assert(profile.givenName === Some("Beau"))
+    assert(profile.familyName === Some("Lebens"))
+  }
 }

@@ -10,6 +10,7 @@ version := "1.0.2"
 
 libraryDependencies <++= (scalaVersion) { s =>
   Seq(
+    "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
     "org.scalatest" % ("scalatest_" + s) % "1.8" % "test"
   )
 }

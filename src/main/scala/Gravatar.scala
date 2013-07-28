@@ -1,5 +1,6 @@
 package scravatar
 
+import dispatch._, Defaults._
 import java.net.{URI, URL, URLEncoder}
 
 /**
@@ -7,12 +8,11 @@ import java.net.{URI, URL, URLEncoder}
  * @author Morten Andersen-Gott - code@andersen-gott.com
  */
 case class Gravatar(private val emailAddress:String, ssl:Boolean, forceDefault:Boolean, defaultImage:Option[DefaultImage], rating:Option[Rating], size:Option[Int]) {
-
-  if(! size.forall(isValidSize))
+  if(!size.forall(s => s > 0 && s <= 2048))
     throw new IllegalArgumentException("Size must be positive and cannot exceed 2048")
 
-  val email = emailAddress.trim.toLowerCase
-  val emailHash = Md5.hash(email)
+  lazy val email = emailAddress.trim.toLowerCase
+  lazy val emailHash = Md5.hash(email)
 
   def ssl(ssl:Boolean):Gravatar = copy(ssl=ssl)
   def default(default:DefaultImage):Gravatar = copy(defaultImage = Some(default))
@@ -24,7 +24,7 @@ case class Gravatar(private val emailAddress:String, ssl:Boolean, forceDefault:B
    * Builds the Gravatar url
    * @return gravatar url as String
    */
-  def avatarUrl:String = {
+  def url:String = {
     initUriBuilder.segments("avatar",emailHash)
       .queryParam("d",defaultImage.map(_.value))
       .queryParam("r", rating.map(_.value))
@@ -32,10 +32,38 @@ case class Gravatar(private val emailAddress:String, ssl:Boolean, forceDefault:B
     .build.toString
   }
 
-  def downloadImage:Array[Byte] = {
-    val is = new URL(avatarUrl).openStream
+  lazy val image:Array[Byte] = {
+    val is = new URL(url).openStream
     Stream.continually(is.read).takeWhile(-1 !=).map(_.toByte).toArray
   }
+
+  lazy val profile: Future[Profile] = {
+    val req = dispatch.url(initUriBuilder.segments(emailHash + ".xml").build.toString)
+    val res = Http.configure(_ setFollowRedirects true)(req OK as.xml.Elem)
+    res.map { xml =>
+      (xml \ "entry").map { entry =>
+        val id = (entry \ "id").text.toLong
+        val hash = (entry \ "hash").text
+        val url = (entry \ "profileUrl").text
+        val givenName = (entry \ "name" \ "givenName").headOption.map(_.text)
+        val familyName = (entry \ "name" \ "familyName").headOption.map(_.text)
+        val displayName = (entry \ "displayName").headOption.map(_.text)
+        val about = (entry \ "aboutMe").headOption.map(_.text)
+        val location = (entry \ "currentLocation").headOption.map(_.text)
+        val ims = (entry \ "ims").map { im =>
+          val key = (im \ "type").text
+          val value = (im \ "value").text
+          key -> value
+        }.toMap
+        val urls = (entry \ "urls").map { im =>
+          val key = (im \ "title").text
+          val value = (im \ "value").text
+          key -> value
+        }.toMap
+        Profile(id, hash, url, givenName, familyName, displayName, about, location, ims, urls)
+      }.head
+    }
+  } 
 
   private def initUriBuilder:URIBuilder = {
     val gravatarBase = "www.gravatar.com"
@@ -47,14 +75,24 @@ case class Gravatar(private val emailAddress:String, ssl:Boolean, forceDefault:B
       urlBuilder.queryParam("forcedefault","y")
     else urlBuilder
   }
-
-  private def isValidSize(size:Int) = size > 0 && size <= 2048
-
 }
 
 object Gravatar{
   def apply(email:String):Gravatar = Gravatar(email, false, false, None, None, None)
 }
+
+case class Profile(
+  id: Long,
+  hash: String,
+  url: String,
+  givenName: Option[String],
+  familyName: Option[String],
+  displayName: Option[String],
+  about: Option[String],
+  location: Option[String],
+  ims: Map[String, String],
+  urls: Map[String, String]
+)
 
 sealed abstract class DefaultImage(val value:String)
 case object Monster extends DefaultImage("monsterid")
