@@ -14,9 +14,7 @@ case class Gravatar(private val emailAddress: String, ssl: Boolean, forceDefault
 
   def ssl(ssl: Boolean): Gravatar = copy(ssl = ssl)
 
-  def default(default: DefaultImage): Gravatar = copy(defaultImage = Some(default))
-  
-  def forceDefault(forceDefault: Boolean): Gravatar = copy(forceDefault = forceDefault)
+  def default(default: DefaultImage, force: Boolean = false): Gravatar = copy(defaultImage = Some(default), forceDefault = force)
   
   def maxRatedAs(rating: Rating): Gravatar = copy(rating = Some(rating))
   
@@ -35,7 +33,7 @@ case class Gravatar(private val emailAddress: String, ssl: Boolean, forceDefault
       .queryParam("s", size.map(_.toString))
       .build.toString
 
-  lazy val image:Array[Byte] = {
+  lazy val image: Array[Byte] = {
     val is = new URL(url).openStream
     Stream.continually(is.read).takeWhile(-1 !=).map(_.toByte).toArray
   }
@@ -75,7 +73,7 @@ case class Gravatar(private val emailAddress: String, ssl: Boolean, forceDefault
       if(ssl) URIBuilder.empty.withHost(gravatarSslBase).withScheme("https")
       else URIBuilder.empty.withHost(gravatarBase).withScheme("http")
     if(forceDefault)
-      urlBuilder.queryParam("forcedefault", "y")
+      urlBuilder.queryParam("f", "y")
     else urlBuilder
   }
 }
