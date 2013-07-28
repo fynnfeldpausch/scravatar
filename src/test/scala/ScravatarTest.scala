@@ -1,10 +1,9 @@
 package scravatar
 
 import org.scalatest.FunSuite
-import java.io.{FileOutputStream}
+import java.io.FileOutputStream
 
 class ScravatarTest extends FunSuite {
-
   val email = "morten@andersen-gott.com"
 
   test("Simple Avatar url") {
@@ -37,8 +36,8 @@ class ScravatarTest extends FunSuite {
     val target = Gravatar(email)
     val upper = Gravatar("MORTEN@ANDERSEN-GOTT.com")
     val space = Gravatar(" %s ".format(email))
-    assert(target.emailHash == upper.emailHash)
-    assert(target.emailHash == space.emailHash)
+    assert(target.hash == upper.hash)
+    assert(target.hash == space.hash)
   }
 
   test("URL is encoded"){
