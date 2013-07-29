@@ -1,37 +1,43 @@
-## Gravatar - because I shouldn't have to upload a picture of myself in a sombrero more than once...
+# Scravatar - A simple Scala library for Gravatar
 
-### API
-Simple
+## Using the Scravatar library
 
-    Gravatar("you@example.com").avatarUrl
+To start off simply create a new `Gravatar` instance and access its field.
 
-To get a secure URL (for embedding on websites served over HTTPS/SSL)
+    val gravatar = Gravatar("you@example.com")
+    gravatar.email // the normalized email address
+    gravatar.hash // the hashed value of the email address
+    gravatar.url // the Gravatar image url
 
-    Gravatar("you@example.com").ssl(true).avatarUrl
+To set the Gravatar's properties call the respective instance methods.
+This will create a new immutable `Gravatar` instance.
 
-Setting all the properties
+    val gravatar = Gravatar("you@example.com")
+    gravatar.ssl(true)
+    gravatar.default(Monster, force = true)
+    gravatar.maxRatedAs(R)
+    gravatar.size(100)
 
-    Gravatar(email).ssl(true).default(Monster).maxRatedAs(R).forceDefault(true).size(100).avatarUrl
-
-More info
-[at Gravatar](http://gravatar.com/site/implement/images/)
 
 
-### Adding the Scravatar dependency
 
-Scravatar does not depend on any third party frameworks. It is built and deployed on maven central. To use it with sbt add
 
-    libraryDependencies ++=
-	  Seq(
-	    "com.andersen-gott" %% "scravatar" % "1.0.2"
-	  )
 
-to your build file
+More info at [Gravatar](http://gravatar.com/site/implement/)
 
-With Maven
+
+## Adding the Scravatar dependency
+
+Scravatar is built and deployed on maven central. To use it with sbt add the following to your build file:
+
+    libraryDependencies ++= Seq(
+      "com.andersen-gott" %% "scravatar" % "1.0.2"
+    )
+
+With Maven:
 
     <dependency>
-	  <groupId>com.andersen-gott</groupId>
-	  <artifactId>scravatar_2.10</artifactId>
-	  <version>1.0.2</version>
-	</dependency>
+      <groupId>com.andersen-gott</groupId>
+      <artifactId>scravatar_2.10</artifactId>
+      <version>1.0.2</version>
+    </dependency>

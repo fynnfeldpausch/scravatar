@@ -1,18 +1,22 @@
 name := "scravatar"
 
-scalaVersion:="2.10.0"
+scalaVersion:="2.10.2"
 
-crossScalaVersions := Seq("2.9.1", "2.9.2", "2.10.0")
+crossScalaVersions := Seq("2.9.3", "2.10.2")
 
 organization := "com.andersen-gott"
 
-version := "1.0.2"
+version := "1.0.3"
 
-libraryDependencies <++= (scalaVersion) { s =>
-  Seq(
-    "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
-    "org.scalatest" % ("scalatest_" + s) % "1.8" % "test"
-  )
+libraryDependencies <++= (scalaVersion) { sv =>
+  sv.split("[.-]").toList match {
+    case "2" :: "9" :: _ => Seq(
+      "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
+      "org.scalatest" %% "scalatest" % "1.9.1" % "test")
+    case _ => Seq(
+      "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
+      "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test")
+  }
 }
 
 credentials += Credentials(Path.userHome / ".sbt" / "magott-credentials")

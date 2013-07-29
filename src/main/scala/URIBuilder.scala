@@ -1,14 +1,14 @@
 package scravatar
+
 import java.net.{URLDecoder, URI, URLEncoder}
 import scala.Option
 
 /**
- *
- * Written by Hamnis, copied from https://github.com/javaBin/ems-redux
+ * Written by Erlend Hamnaberg, copied from https://github.com/javaBin/ems-redux.
  */
-private case class URIBuilder private(scheme: Option[String], host: Option[String], port: Option[Int], path: List[Segment], params: Map[String, List[String]], pathEndsWithSlash: Boolean = false) {
+private case class URIBuilder(scheme: Option[String], host: Option[String], port: Option[Int], path: List[Segment], params: Map[String, Seq[String]], pathEndsWithSlash: Boolean = false) {
   def withScheme(scheme: String) = copy(scheme = Some(scheme))
-
+  
   def withHost(host: String) = copy(host = Some(host))
   def withPort(port: Int) = copy(port = Some(port))
 
@@ -23,7 +23,7 @@ private case class URIBuilder private(scheme: Option[String], host: Option[Strin
     val (segments, endsWithSlash) = URIBuilder.decodePath(path)
     copy(path = segments, pathEndsWithSlash = endsWithSlash)
   }
-
+  
   def emptyPath() = copy(path = Nil)
 
   def emptyParams() = copy(params = Map.empty)
@@ -40,7 +40,7 @@ private case class URIBuilder private(scheme: Option[String], host: Option[Strin
   def replaceSegments(segments: Segment*) = copy(path = segments.toList)
 
   def replaceQueryParam(name: String, value:String) = copy(params = params + (name -> List(value)))
-
+  
   def build() = {
     def mkParamString() = {
       params.map{case (k, v) => v.map(i => "%s=%s".format(k, i)).mkString("&")}.mkString("&")
@@ -62,6 +62,9 @@ private case class URIBuilder private(scheme: Option[String], host: Option[Strin
 
 private object URIBuilder {
   val KeyValue = """(?i)(\w+)=(.*)?""".r
+
+  def apply(input: String): URIBuilder = apply(URI.create(input))
+
   def apply(uri: URI): URIBuilder = {
     val (path, endsWithSlash) = decodePath(uri.getPath)
     def buildMap: (String) => Map[String, scala.List[String]] = s => {
@@ -73,10 +76,10 @@ private object URIBuilder {
         }
       }
     }
-    val params = Option(uri.getQuery).map(buildMap).getOrElse(Map[String, List[String]]())
+    val params = Option(uri.getQuery).map(buildMap).getOrElse(Map[String, Seq[String]]())
     new URIBuilder(Option(uri.getScheme), Option(uri.getHost), Option(uri.getPort).filterNot(_ == -1), path, params, endsWithSlash)
   }
-
+  
   def fromPath(path: String): URIBuilder = {
     empty.path(path)
   }

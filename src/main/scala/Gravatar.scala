@@ -8,17 +8,17 @@ import java.security.MessageDigest
  * Immutable (thread safe) class used to generate Gravatar URLs.
  * @author Morten Andersen-Gott - code@andersen-gott.com
  */
-case class Gravatar(private val emailAddress: String, ssl: Boolean, forceDefault: Boolean, defaultImage: Option[DefaultImage], rating: Option[Rating], size: Option[Int]) {
-  if(!size.forall(s => s > 0 && s <= 2048))
+case class Gravatar(private val emailAddress: String, ssl: Boolean, forceDefault: Boolean, defaultImage: Option[DefaultImage], rating: Option[Rating], imgSize: Option[Int]) {
+  if(!imgSize.forall(s => s > 0 && s <= 2048))
     throw new IllegalArgumentException("Size must be positive and cannot exceed 2048")
 
   def ssl(ssl: Boolean): Gravatar = copy(ssl = ssl)
 
-  def default(default: DefaultImage, force: Boolean = false): Gravatar = copy(defaultImage = Some(default), forceDefault = force)
+  def default(image: DefaultImage, force: Boolean = false): Gravatar = copy(defaultImage = Some(image), forceDefault = force)
   
   def maxRatedAs(rating: Rating): Gravatar = copy(rating = Some(rating))
   
-  def size(size: Int): Gravatar = copy(size = Some(size))
+  def size(size: Int): Gravatar = copy(imgSize = Some(size))
 
   lazy val email: String =
     emailAddress.trim.toLowerCase
@@ -30,12 +30,12 @@ case class Gravatar(private val emailAddress: String, ssl: Boolean, forceDefault
     initUriBuilder.segments("avatar", hash)
       .queryParam("d", defaultImage.map(_.value))
       .queryParam("r", rating.map(_.value))
-      .queryParam("s", size.map(_.toString))
+      .queryParam("s", imgSize.map(_.toString))
       .build.toString
 
   lazy val image: Array[Byte] = {
     val is = new URL(url).openStream
-    Stream.continually(is.read).takeWhile(-1 !=).map(_.toByte).toArray
+    Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
   }
 
   lazy val profile: Future[Profile] = {
@@ -64,7 +64,7 @@ case class Gravatar(private val emailAddress: String, ssl: Boolean, forceDefault
         Profile(id, hash, url, givenName, familyName, displayName, about, location, ims, urls)
       }.head
     }
-  } 
+  }
 
   private def initUriBuilder: URIBuilder = {
     val gravatarBase = "www.gravatar.com"
