@@ -1,4 +1,4 @@
-# Scravatar - A simple Scala library for Gravatar
+# Scravatar - A Scala library for Gravatar
 
 This library is an extended version of the [tiny scala library for Gravatar](https://github.com/magott/scravatar)
 by [Morten Andersen-Gott](https://github.com/magott).
