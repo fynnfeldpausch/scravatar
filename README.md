@@ -24,7 +24,7 @@ This will create a new immutable `Gravatar` instance.
 The Gravatar image can be downloaded and is available as a byte array.
 
     val gravatar = Gravatar("you@example.com")
-    val imgage = gravatar.image
+    val image = gravatar.image
 
 Finally, Scravatar provides easy access to the Gravatar's profile data.
 As the response time of the Gravatar API may vary, the `Profile` is computed
@@ -41,19 +41,3 @@ futures can be found [in the Scala docs](http://docs.scala-lang.org/overviews/co
     //...
 
 More info at [Gravatar.com](http://gravatar.com/site/implement/).
-
-## Adding the Scravatar dependency
-
-Scravatar is built and deployed on maven central. To use it with sbt add the following to your build file:
-
-    libraryDependencies ++= Seq(
-      "com.andersen-gott" %% "scravatar" % "1.0.2"
-    )
-
-With Maven:
-
-    <dependency>
-      <groupId>com.andersen-gott</groupId>
-      <artifactId>scravatar_2.10</artifactId>
-      <version>1.0.2</version>
-    </dependency>
